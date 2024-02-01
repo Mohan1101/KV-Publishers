@@ -251,7 +251,7 @@ class ItemRow extends React.Component {
               step: '0.01',
               precision: 2,
               textAlign: 'text-end',
-              value: this.props.item.price,
+              value: this.props.item.price = this.props.inventoryData.find((item) => item.label == this.props.item.name)?.price || 0,
               id: this.props.item.id,
             }}
             
