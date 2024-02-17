@@ -114,3 +114,22 @@ hr {
   overflow-y: auto;
   z-index: 1;
 }
+
+/* zoom in and out */
+@keyframes scaleAnimation {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.8);
+  }
+}
+
+.scale-animation {
+  animation: scaleAnimation 1.2s infinite;
+  
+}
+

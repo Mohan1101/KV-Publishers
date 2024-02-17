@@ -179,7 +179,7 @@ try {
                 <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
                   
                   <div className="fw-bold d-flex flex-column">
-                    <p>Shipping to:</p>
+                    <p>Credit to:</p>
                     <p className=" ">School Name:&nbsp; {SchoolName}</p>
                     <p className=" ">Principal Name: &nbsp;{Principal}</p>
                     
@@ -198,7 +198,7 @@ try {
                 <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
                   <div className='fw-bold'>
 
-                    <p>To</p>
+                    <p>From</p>
                     <p>KV PUBLISHERS</p>
                     <p>No:57, MGR SALAI</p>
                     <p>ARCOT - 632503</p>
@@ -222,42 +222,12 @@ try {
                     </Col>
                   </Row>
                  
-                  <Row className="mb-0">
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Supplier's Ref:</div>
-                      <div>{this.props.info.Sref || '-'}</div>
-                    </Col>
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Other Reference(s):</div>
-                      <div>{this.props.info.Oref || '-'}</div>
-                    </Col>
-                  </Row>
-                  <Row className="mb-0">
-                    
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Mode/Terms of Payment</div>
-                      <div>{this.props.info.payment || '-'}</div>
-                    </Col>
-                   
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Terms of Delivery:</div>
-                      <div>{this.props.info.tod || '-'}</div>
-                    </Col>
-                  
-                  </Row>
+                 
+                
                 </Col>
                 <Col md={6} >
-                  <Row className="mb-0">
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Buyer's Ref:</div>
-                      <div>{this.props.info.Bref || '-'}</div>
-                    </Col>
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Order No.:</div>
-                      <div>{this.props.info.delNo || '-'}</div>
-                    </Col>
-                    
-                  </Row>
+                  
+                 
                   <Row className="mb-0">
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Despatch Document No.:</div>
@@ -265,19 +235,10 @@ try {
                     </Col>
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Dated:</div>
-                      <div>{this.props.info.bdate || '-'}</div>
+                      <div>{this.props.info.ddDate || '-'}</div>
                     </Col>
                   </Row>
-                  <Row className="mb-0">
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Despatched through:</div>
-                      <div>{this.props.info.disthru || '-'}</div>
-                    </Col>
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Destination:</div>
-                      <div>{this.props.info.destn || '-'}</div>
-                    </Col>
-                  </Row>
+                 
                   
                 </Col>
               </Row>
@@ -417,7 +378,7 @@ try {
                 <Col style={{ border: '1px solid black', padding: '3px' }}>
                   <p style={{ paddingLeft: '240px' }}>For KV PUBLISHERS</p>
 
-                  <p style={{ paddingBottom: '2px', paddingTop: '30px', fontWeight: 'bold', paddingLeft: '245px', fontSize: '16px', lineHeight: '6px' }}>Velandhan. K</p>
+                  <p style={{ paddingBottom: '2px', paddingTop: '30px', fontWeight: 'bold', paddingLeft: '245px', fontSize: '16px', lineHeight: '6px' }}>&nbsp; Velandhan. K</p>
                   <p style={{ paddingLeft: '230px', fontSize: '14px', fontWeight: 'bold' }}>Authorised Signatory</p>
                 </Col>
                 

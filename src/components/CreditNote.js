@@ -7,7 +7,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
-import OrderItem from './OrderItem';
+import CreditNoteItem from './CreditNoteitem';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { db } from '../firebase/firebase'; // Replace with your actual Firebase db import path
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -85,15 +86,13 @@ class CreditNote extends React.Component {
 
     handleItemsDone = (isDone) => {
         this.setState({ itemsDone: isDone });
+        this.handleCalculateTotal();
     };
 
-    async componentDidMount() {
-        await this.fetchSchoolOptions();
-        this.handleCalculateTotal();
-    }
 
     componentDidMount() {
         this.fetchSchoolOptions();
+        this.handleCalculateTotal();
     }
 
     fetchSchoolOptions = async () => {
@@ -111,7 +110,7 @@ class CreditNote extends React.Component {
         }
     };
 
-handleSchoolChange = async (e) => {
+    handleSchoolChange = async (e) => {
         const schoolName = e.target.value;
 
         try {
@@ -127,6 +126,7 @@ handleSchoolChange = async (e) => {
                     Contact: schoolData.contact || '',
                     Email: schoolData.email || '',
                 });
+                console.log('Selected school:', schoolData);
             } else {
                 console.error('Selected school does not exist:', schoolName);
             }
@@ -145,48 +145,48 @@ handleSchoolChange = async (e) => {
     handleAddEvent(evt) {
         var id = (+ new Date() + Math.floor(Math.random() * 999999)).toString(36);
         var items = {
-          id: id,
-          name: '',
-          price: '1.00',
-          description: '',
-          quantity: 1
+            id: id,
+            name: '',
+            price: '1.00',
+            description: '',
+            quantity: 1
         };
         this.state.items.push(items);
-    
+
         this.setState(
-          { items: this.state.items },
-          () => this.handleCalculateTotal() // Recalculate the total after adding an item
+            { items: this.state.items },
+
         );
-      }
-      handleCalculateTotal() {
+    }
+    handleCalculateTotal() {
         this.setState(
-          prevState => {
-            const items = prevState.items;
-            const subTotal = items.reduce(
-              (total, item) =>
-                total + parseFloat(item.price) * parseInt(item.quantity),
-              0
-            );
-    
-            const discountAmmount = parseFloat(
-              subTotal * (prevState.discountRate / 100)
-            ).toFixed(2);
-            const total =
-              subTotal - discountAmmount;
-    
-            return {
-              subTotal: parseFloat(subTotal).toFixed(2),
-              discountAmmount: discountAmmount,
-              total: total
-            };
-          }
+            prevState => {
+                const items = prevState.items;
+                const subTotal = items.reduce(
+                    (total, item) =>
+                        total + parseFloat(item.price) * parseInt(item.quantity),
+                    0
+                );
+
+                const discountAmmount = parseFloat(
+                    subTotal * (prevState.discountRate / 100)
+                ).toFixed(2);
+                const total =
+                    subTotal - discountAmmount;
+
+                return {
+                    subTotal: parseFloat(subTotal).toFixed(2),
+                    discountAmmount: discountAmmount,
+                    total: total
+                };
+            }
         );
-      }
-      handleChange = (event) => {
+    }
+    handleChange = (event) => {
         this.setState({
-          payment: event.target.checked ? event.target.name : ''
+            payment: event.target.checked ? event.target.name : ''
         });
-      };
+    };
 
     onItemizedItemEdit(evt) {
         var item = {
@@ -204,7 +204,7 @@ handleSchoolChange = async (e) => {
             return items;
         });
         this.setState({ items: newItems });
-        this.handleCalculateTotal();
+
     }
 
     editField = (event) => {
@@ -224,6 +224,7 @@ handleSchoolChange = async (e) => {
 
     render() {
         const { schools, SchoolName, Email, Principal, Address, Contact, bdate } = this.state;
+        const buttonClassName = `d-block w-100 btn-secondary ${this.state.itemsDone ? 'scale-animation' : ''}`;
         return (
             <Form onSubmit={this.openModal}>
                 <Row>
@@ -247,7 +248,7 @@ handleSchoolChange = async (e) => {
                             <Row className="mb-3">
                                 <Col md={6} lg={12} className="scrollable-col" style={{ borderRight: '1px solid grey', paddingRight: '10px' }}>
                                     <Form.Label className="fw-bold">Credit to:</Form.Label>
-                                    <br/>
+                                    <br />
                                     <Select
                                         value={SchoolName}
                                         onChange={this.handleSchoolChange}
@@ -274,13 +275,27 @@ handleSchoolChange = async (e) => {
                                         <Form.Control type="date" value={bdate} name="bdate" onChange={(event) => this.editField(event)} style={{ paddingLeft: '20px', maxWidth: '230px' }} />
                                     </div>
                                 </Col>
-                                
+                                <Col md={12}>
+                                    <hr className="my-4" />
+                                    <Form.Label className="fw-bold">Dispatch details:</Form.Label>
+                                    <Form.Control placeholder={"Dispatch Document No."} rows={3} value={this.state.ddNo} type="text" name="ddNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
+                                    <div className="d-flex flex-row align-items-center" style={{ paddingTop: '35px' }}>
+                                    <span className=" d-block me-2">Dated:</span>
+                                        <Form.Control type="date" value={this.state.ddDate}
+                                         name={"ddDate"} onChange={(event) => this.editField(event)} style={{
+                                            paddingLeft: '20px',
+                                            maxWidth: '230px'
+                                        }} />
+                                    </div>
+
+                                </Col>
+
 
                             </Row>
-                            
-                         
+
+
                             <hr className="my-4" />
-                            <OrderItem
+                            <CreditNoteItem
                                 onItemizedItemEdit={this.onItemizedItemEdit.bind(this)}
                                 onRowAdd={this.handleAddEvent.bind(this)}
                                 onRowDel={this.handleRowDel.bind(this)}
@@ -315,8 +330,8 @@ handleSchoolChange = async (e) => {
                             <Button
                                 variant="primary"
                                 type="submit"
-                                className="d-block w-100 btn-secondary"
-                                disabled={!this.state.itemsDone} // Disable the button if items are not done
+                                className={buttonClassName}
+                                disabled={!this.state.itemsDone}
                             >
                                 Review Invoice
                             </Button>

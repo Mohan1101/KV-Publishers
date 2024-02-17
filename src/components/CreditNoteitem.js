@@ -7,6 +7,7 @@ import EditableField from './EditableField';
 import { getDocs, collection, doc, updateDoc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import Modal from 'react-bootstrap/Modal';
+import Spinner from 'react-bootstrap/Spinner';
 
 class CreditNoteItem extends React.Component {
   constructor(props) {
@@ -17,6 +18,7 @@ class CreditNoteItem extends React.Component {
       showErrorModal: false,
       errorMessage: '',
       remainingQuantity: 0,
+      isSubmitting: false,
     };
   }
   
@@ -31,6 +33,7 @@ class CreditNoteItem extends React.Component {
         label: doc.id,
         value: doc.data().BookName,
         quantity: doc.data().Quantity,
+        price: doc.data().SellingPrice,
       }));
 
       console.log('Inventory Data:', inventoryData);
@@ -41,24 +44,13 @@ class CreditNoteItem extends React.Component {
     }
   }
 
-  handleQuantityUpdate = (itemName, newItemLabel) => {
-    // Check if items array is defined in the state
-    if (this.state.items) {
-      // Update the label (name) in the items array
-      const updatedItems = this.state.items.map((item) =>
-        item.cnname === itemName ? { ...item, cnname: newItemLabel } : item
-      );
-  
-      this.setState({ items: updatedItems });
-    } else {
-      console.error('Items array is undefined in state.');
-    }
-  };
-  
+
 
   handleDone = async () => {
+    this.setState({ isSubmitting: true });
+  
     for (const item of this.props.items) {
-      const selectedItemId = item.cnname;
+      const selectedItemId = item.name;
   
       if (selectedItemId) {
         try {
@@ -67,30 +59,13 @@ class CreditNoteItem extends React.Component {
   
           if (productSnapshot.exists()) {
             const currentQuantity = productSnapshot.data().Quantity || 0;
-            const enteredQuantity = parseInt(item.cnquantity, 10);
+            const enteredQuantity = parseInt(item.quantity, 10);
   
-            if (enteredQuantity > currentQuantity) {
-              const remainingQuantity = currentQuantity;
-              const itemName = productSnapshot.data().BookName || 'Unknown Item';
-              this.setState({
-                showErrorModal: true,
-                errorMessage: `Insufficient quantity for ${itemName}.`,
-                remainingQuantity,
-              });
-              return;
-            }
+            const updatedQuantity = currentQuantity + enteredQuantity;
   
-            const updatedQuantity = currentQuantity - enteredQuantity;
-  
-            if (updatedQuantity === 0) {
-              // If the quantity becomes zero, consider it as a delete action and add the quantity back
-              await updateDoc(productRef, { Quantity: updatedQuantity });
-              console.log(`Item ${selectedItemId} deleted. Quantity added back: ${enteredQuantity}`);
-            } else {
-              // Otherwise, update the quantity in the 'GENERAL PRODUCTS' collection
-              await updateDoc(productRef, { Quantity: updatedQuantity });
-              console.log(`Quantity updated for ${selectedItemId}. New quantity: ${updatedQuantity}`);
-            }
+            // Update the quantity in the 'GENERAL PRODUCTS' collection
+            await updateDoc(productRef, { Quantity: updatedQuantity });
+            console.log(`Quantity updated for ${selectedItemId}. New quantity: ${updatedQuantity}`);
           } else {
             console.error(`Document does not exist for ${selectedItemId} in 'GENERAL PRODUCTS'.`);
           }
@@ -101,8 +76,11 @@ class CreditNoteItem extends React.Component {
         console.error('Selected item ID is undefined.');
       }
     }
+  
+    this.setState({ isSubmitting: false });
     this.props.onItemsDone(true);
   };
+  
   
 
   render() {
@@ -118,7 +96,7 @@ class CreditNoteItem extends React.Component {
           key={item.id}
           currency={currency}
           inventoryData={this.state.inventoryData}
-          onQuantityUpdate={this.handleQuantityUpdate.bind(this)}
+     
         />
       );
     }, this);
@@ -140,8 +118,15 @@ class CreditNoteItem extends React.Component {
         <Button className="fw-bold btn-secondary" onClick={this.props.onRowAdd}>
           Add Item
         </Button>
-        <Button className="fw-bold btn-success ms-2" onClick={this.handleDone}>
-          Done
+        <Button className="fw-bold btn-success ms-2" onClick={this.handleDone} disabled={this.state.isSubmitting}>
+          {this.state.isSubmitting ? (
+            <>
+              <Spinner animation="border" size="sm" className="me-2" />
+              Submitting...
+            </>
+          ) : (
+            'Submit'
+          )}
         </Button>
         <Modal show={this.state.showErrorModal} onHide={() => this.setState({ showErrorModal: false })}>
           <Modal.Header closeButton>
@@ -164,30 +149,27 @@ class CreditNoteItem extends React.Component {
 class ItemRow extends React.Component {
   onDelEvent() {
     this.props.onDelEvent(this.props.item);
-    this.props.onQuantityUpdate(this.props.item.cnname, 0);
+
   }
 
-  handleQuantityChange = (event) => {
-    const newQuantity = event.target.value;
-    const itemName = this.props.item?.cnname || '';
 
-    this.props.onQuantityUpdate(itemName, newQuantity);
-  };
 
   render() {
     return (
       <tr>
         <td style={{ width: '100%' }}>
-          <EditableField
+        <EditableField
             onItemizedItemEdit={this.props.onItemizedItemEdit}
             cellData={{
               type: 'select',
-              name: 'cnname',
+              name: 'name',
               placeholder: 'Select Item',
               options: this.props.inventoryData,
-              value: this.props.item?.cnname || '',
-              id: this.props.item?.id || '',
+              value: this.props.item.name,
+              id: this.props.item.id,
+
             }}
+
           />
         </td>
         <td style={{ minWidth: '120px' }}>
@@ -195,13 +177,12 @@ class ItemRow extends React.Component {
             onItemizedItemEdit={this.props.onItemizedItemEdit}
             cellData={{
               type: 'number',
-              name: 'cnquantity',
+              name: 'quantity',
               min: 1,
               step: '1',
-              value: this.props.item.cnquantity,
+              value: this.props.item.quantity,
               id: this.props.item.id,
             }}
-            onChange={this.handleQuantityChange}
           />
         </td>
         <td style={{ minWidth: '130px' }}>
@@ -210,12 +191,12 @@ class ItemRow extends React.Component {
             cellData={{
               leading: this.props.currency,
               type: 'number',
-              name: 'cnprice',
+              name: 'price',
               min: 1,
               step: '0.01',
               precision: 2,
               textAlign: 'text-end',
-              value: this.props.item.cnprice,
+              value: this.props.item.price = this.props.inventoryData.find((item) => item.label == this.props.item.name)?.price || 0,
               id: this.props.item.id,
             }}
           />

@@ -96,6 +96,7 @@ class OrderModal extends React.Component {
       const pdfFileName = `Order-${Date.now()}.pdf`;
       const storageRef = ref(storage, pdfFileName);
       const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
+    
   
       try {
         // Upload compressed PDF to Firebase Storage
@@ -126,13 +127,17 @@ class OrderModal extends React.Component {
         // Split product names and create documents in the 'Products' subcollection
         const productNames = this.props.items.map(item => ({
           name: item.name,
-          quantity: item.quantity
+          quantity: item.quantity,
+          pendingQuantity: item.pendingQuantity,
+          date: this.props.info.currentDate,
         }));
         
         for (const product of productNames) {
           await addDoc(productsSubcollectionRef, {
             Product: product.name,
             Quantity: product.quantity,
+            PendingQuantity: product.pendingQuantity,
+            Date: product.date,
             Status: '',  // Set the initial status to an empty string
           });
         }
@@ -204,7 +209,7 @@ class OrderModal extends React.Component {
                 <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
                   <div className='fw-bold'>
 
-                    <p>To</p>
+                    <p>From</p>
                     <p>KV PUBLISHERS</p>
                     <p>No:57, MGR SALAI</p>
                     <p>ARCOT - 632503</p>

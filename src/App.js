@@ -43,7 +43,7 @@ function App() {
 
         <Container>
           <Routes>
-            <Route path="/" element={<InvoiceForm />} />
+
             <Route path="/creditbalance" element={<CreditNote />} />
             <Route path="/orderform" element={<OrderForm />} />
           </Routes>

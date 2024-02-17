@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import OrderItem from './OrderItem';
-import { db } from '../firebase/firebase'; // Replace with your actual Firebase db import path
+import { db } from '../firebase/firebase'; 
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import OrderModal from './OrderModal';
@@ -62,17 +62,19 @@ class OrderForm extends React.Component {
                     name: '',
                     description: '',
                     price: '1.00',
-                    quantity: 1
+                    quantity: 0,
+                    pendingQuantity: 0,
+                    remainingQuantity: 0,
                 }
             ],
             schools: [],
-
 
 
         };
 
         this.editField = this.editField.bind(this);
         this.handleSchoolChange = this.handleSchoolChange.bind(this);
+     
     }
 
     getCurrentDate = () => {
@@ -85,15 +87,14 @@ class OrderForm extends React.Component {
 
     handleItemsDone = (isDone) => {
         this.setState({ itemsDone: isDone });
+        this.handleCalculateTotal();
     };
 
-    async componentDidMount() {
-        await this.fetchSchoolOptions();
-        this.handleCalculateTotal();
-    }
+
 
     componentDidMount() {
         this.fetchSchoolOptions();
+        this.handleCalculateTotal();
     }
 
     fetchSchoolOptions = async () => {
@@ -142,6 +143,7 @@ handleSchoolChange = async (e) => {
         this.setState(this.state.items);
     };
 
+
     handleAddEvent(evt) {
         var id = (+ new Date() + Math.floor(Math.random() * 999999)).toString(36);
         var items = {
@@ -149,15 +151,18 @@ handleSchoolChange = async (e) => {
           name: '',
           price: '1.00',
           description: '',
-          quantity: 1
+          quantity: 1,
+          pendingQuantity: 0,
         };
         this.state.items.push(items);
     
         this.setState(
           { items: this.state.items },
-          () => this.handleCalculateTotal() // Recalculate the total after adding an item
+          
+            
         );
       }
+
       handleCalculateTotal() {
         this.setState(
           prevState => {
@@ -194,18 +199,49 @@ handleSchoolChange = async (e) => {
             name: evt.target.name,
             value: evt.target.value
         };
+    
+        
         var items = this.state.items.slice();
         var newItems = items.map(function (items) {
             for (var key in items) {
-                if (key == item.name && items.id == item.id) {
+                if (key == item.name && items.name == item.id) {
                     items[key] = item.value;
+                    items.id = item.id;
                 }
             }
             return items;
         });
         this.setState({ items: newItems });
-        this.handleCalculateTotal();
+        console.log("evt",this.state.items);
+        //this.handleCalculateTotal();
+      
     }
+    onItemizedItemEdit2 = (id, name, value) => {
+       
+        
+        var item = {
+          id: id,
+          name: name,
+          value: value
+        };
+        console.log("onitemized",item);
+        var items = this.state.items.slice();
+        console.log("items",items);
+        var newItems = items.map(function (items) {
+            for (var key in items) {
+                if (key == item.name && items.name == item.id) {
+                    items[key] = item.value;
+                    items.id = item.id;
+                }
+            }
+            return items;
+        });
+        this.setState({ items: newItems });
+        console.log(this.state.items);
+ 
+      };
+      
+
 
     editField = (event) => {
         this.setState({
@@ -224,6 +260,7 @@ handleSchoolChange = async (e) => {
 
     render() {
         const { schools, SchoolName, Email, Principal, Address, Contact, bdate } = this.state;
+        const buttonClassName = `d-block w-100 btn-secondary ${this.state.itemsDone ? 'scale-animation' : ''}`;
         return (
             <Form onSubmit={this.openModal}>
                 <Row>
@@ -315,7 +352,7 @@ handleSchoolChange = async (e) => {
                                     <div className="d-flex flex-row align-items-center" style={{ paddingTop: '35px' }}>
                                     <span className=" d-block me-2">Dated:</span>
                                         <Form.Control type="date" value={this.state.ddDate}
-                                         name={"bdate"} onChange={(event) => this.editField(event)} style={{
+                                         name={"ddDate"} onChange={(event) => this.editField(event)} style={{
                                             paddingLeft: '20px',
                                             maxWidth: '230px'
                                         }} />
@@ -333,12 +370,15 @@ handleSchoolChange = async (e) => {
                             <hr className="my-4" />
                             <OrderItem
                                 onItemizedItemEdit={this.onItemizedItemEdit.bind(this)}
+                                onItemizedItemEdit2={this.onItemizedItemEdit2}
                                 onRowAdd={this.handleAddEvent.bind(this)}
                                 onRowDel={this.handleRowDel.bind(this)}
                                 currency={this.state.currency}
                                 items={this.state.items}
                                 onItemsDone={this.handleItemsDone} // Pass the callback function to InvoiceItem
                             />
+                      
+                            
                             <Row className="mt-4 justify-content-end">
                                 <Col lg={6}>
                                     <div className="d-flex flex-row align-items-start justify-content-between">
@@ -363,14 +403,14 @@ handleSchoolChange = async (e) => {
                     </Col>
                     <Col md={4} lg={3} className="fixed-col">
                         <div className="sticky-top pt-md-3 pt-xl-4">
-                            <Button
-                                variant="primary"
-                                type="submit"
-                                className="d-block w-100 btn-secondary"
-                                disabled={!this.state.itemsDone} // Disable the button if items are not done
-                            >
-                                Review Invoice
-                            </Button>
+                        <Button
+        variant="primary"
+        type="submit"
+        className={buttonClassName}
+        disabled={!this.state.itemsDone}
+      >
+        Review Invoice
+      </Button>
                             <OrderModal
                                 showModal={this.state.isOpen}
                                 closeModal={this.closeModal}
