@@ -214,6 +214,23 @@ class CreditNote extends React.Component {
         this.handleCalculateTotal();
     };
 
+    editFieldDate = (event) => {
+        // Extract the day, month, and year from the input value
+        const [year, month, day] = event.target.value.split('-');
+
+        // Format the date as "dd-mm-yyyy"
+        const formattedDate = `${day}-${month}-${year}`;
+
+        // Set the formatted date in the state
+        this.setState({
+            [event.target.name]: formattedDate
+        });
+
+        // Call any additional functions, like handleCalculateTotal, if needed
+        this.handleCalculateTotal();
+    };
+
+
     openModal = (event) => {
         event.preventDefault();
         this.handleCalculateTotal();
@@ -271,22 +288,33 @@ class CreditNote extends React.Component {
                                     <Form.Control placeholder="Contact" value={Contact} type="text" name="Contact" className="my-2" onChange={(event) => this.editField(event)} />
                                     <Form.Control placeholder="Email" value={Email} type="email" name="Email" className="my-2" onChange={(event) => this.editField(event)} />
                                     <div className="d-flex flex-row align-items-center">
-                                        <span className=" d-block me-2">Ordered Date:</span>
-                                        <Form.Control type="date" value={bdate} name="bdate" onChange={(event) => this.editField(event)} style={{ paddingLeft: '20px', maxWidth: '230px' }} />
+                                        <span className="d-block me-2">Ordered Date:</span>
+                                        <Form.Control
+                                            type="date"
+                                            value={bdate.split('-').reverse().join('-')}  // Format date as "dd-mm-yyyy"
+                                            name="bdate"
+                                            onChange={(event) => this.editFieldDate(event)}
+                                            style={{ paddingLeft: '20px', maxWidth: '230px' }}
+                                        />
                                     </div>
+
                                 </Col>
                                 <Col md={12}>
                                     <hr className="my-4" />
                                     <Form.Label className="fw-bold">Dispatch details:</Form.Label>
                                     <Form.Control placeholder={"Dispatch Document No."} rows={3} value={this.state.ddNo} type="text" name="ddNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
-                                    <div className="d-flex flex-row align-items-center" style={{ paddingTop: '35px' }}>
-                                    <span className=" d-block me-2">Dated:</span>
-                                        <Form.Control type="date" value={this.state.ddDate}
-                                         name={"ddDate"} onChange={(event) => this.editField(event)} style={{
-                                            paddingLeft: '20px',
-                                            maxWidth: '230px'
-                                        }} />
+                                    <Form.Label className="fw-bold">Dispatch Date:</Form.Label>
+                                    <div className="d-flex flex-row align-items-center">
+                                       
+                                        <Form.Control
+                                            type="date"
+                                            value={ this.state.ddDate.split('-').reverse().join('-')}
+                                            name="ddDate" 
+                                            onChange={(event) => this.editFieldDate(event)}
+                                            style={{ paddingLeft: '20px', maxWidth: '230px' }}
+                                        />
                                     </div>
+
 
                                 </Col>
 

@@ -91,20 +91,20 @@ class OrderModal extends React.Component {
   }
 
   uploadToFirebase = async () => {
-    this.setState({ saving: true }); 
+    this.setState({ saving: true });
     GenerateInvoice(async (pdfBlob) => {
       const pdfFileName = `Order-${Date.now()}.pdf`;
       const storageRef = ref(storage, pdfFileName);
       const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
-    
-  
+
+
       try {
         // Upload compressed PDF to Firebase Storage
         await uploadBytes(storageRef, pdfBlob);
         console.log('Compressed PDF uploaded to Firebase Storage');
-  
+
         const downloadURL = await getDownloadURL(storageRef);
-  
+
         // Create a new document in the 'Orders' collection with relevant fields, excluding 'Products'
         const ordersCollectionRef = collection(db, 'Orders');
         const orderDocRef = await addDoc(ordersCollectionRef, {
@@ -118,12 +118,12 @@ class OrderModal extends React.Component {
           Date: this.props.info.currentDate,
           // Add more fields as needed
         });
-  
+
         console.log('Invoice details uploaded to Firestore (Orders collection)');
-  
+
         // Create a new subcollection 'Products' inside the 'Orders' document
         const productsSubcollectionRef = collection(orderDocRef, 'Products');
-  
+
         // Split product names and create documents in the 'Products' subcollection
         const productNames = this.props.items.map(item => ({
           name: item.name,
@@ -131,7 +131,7 @@ class OrderModal extends React.Component {
           pendingQuantity: item.pendingQuantity,
           date: this.props.info.currentDate,
         }));
-        
+
         for (const product of productNames) {
           await addDoc(productsSubcollectionRef, {
             Product: product.name,
@@ -141,13 +141,13 @@ class OrderModal extends React.Component {
             Status: '',  // Set the initial status to an empty string
           });
         }
-        
-  
+
+
         console.log('Product details uploaded to Firestore (Products subcollection)');
-  
+
         // Redirect to the desired URL after successful upload
         window.location.assign('https://kvpublication-daat.web.app/');
-  
+
       } catch (error) {
         console.error('Error uploading compressed PDF to Firebase Storage:', error);
       }
@@ -156,8 +156,8 @@ class OrderModal extends React.Component {
       }
     });
   };
-  
-  
+
+
 
 
 
@@ -188,19 +188,19 @@ class OrderModal extends React.Component {
             <div className="p-4">
               <Row className="mb-0">
                 <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
-                  
+
                   <div className="fw-bold d-flex flex-column">
                     <p>Shipping to:</p>
                     <p className=" ">School Name:&nbsp; {SchoolName}</p>
                     <p className=" ">Principal Name: &nbsp;{Principal}</p>
-                    
+
                     <p className=" ">Address: &nbsp;{Address}</p>
-                    
+
                     <p className=" ">Contact: &nbsp; {Contact}</p>
-                    
+
                     <p className=" ">Email: &nbsp; {Email}</p>
 
-                    
+
                     <p className=" ">Ordered Date: {this.props.info.bdate}
                     </p>
                   </div>
@@ -221,7 +221,7 @@ class OrderModal extends React.Component {
                 </Col>
               </Row>
               <Row className="mb-0">
-              <Col md={6} >
+                <Col md={6} >
                   <Row className="mb-0">
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Invoice No.:</div>
@@ -232,7 +232,7 @@ class OrderModal extends React.Component {
                       <div>{this.props.info.currentDate}</div>
                     </Col>
                   </Row>
-                 
+
                   <Row className="mb-0">
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Supplier's Ref:</div>
@@ -244,17 +244,27 @@ class OrderModal extends React.Component {
                     </Col>
                   </Row>
                   <Row className="mb-0">
-                    
+
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
-                      <div className="fw-bold">Mode/Terms of Payment</div>
-                      <div>{this.props.info.payment || '-'}</div>
+                      <div><strong>Mode of Payment:</strong></div>
+                      <div className="btn-group btn-group-toggle" style={{ padding: '4px' }} data-toggle="buttons">
+                        <label className={`btn btn-secondary ${this.state.payment === 'NEFT' ? 'active' : ''}`}>
+                          <input type="radio" name="NEFT" autoComplete="off" onChange={this.handleChange} checked={this.state.payment === 'NEFT'} /> NEFT
+                        </label>
+                        <label className={`btn btn-secondary ${this.state.payment === 'RTGS' ? 'active' : ''}`}>
+                          <input type="radio" name="RTGS" autoComplete="off" onChange={this.handleChange} checked={this.state.payment === 'RTGS'} /> RTGS
+                        </label>
+                        <label className={`btn btn-secondary ${this.state.payment === 'MPS' ? 'active' : ''}`}>
+                          <input type="radio" name="MPS" autoComplete="off" onChange={this.handleChange} checked={this.state.payment === 'MPS'} /> MPS
+                        </label>
+                      </div>
                     </Col>
-                   
+
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Terms of Delivery:</div>
                       <div>{this.props.info.tod || '-'}</div>
                     </Col>
-                  
+
                   </Row>
                 </Col>
                 <Col md={6} >
@@ -267,7 +277,7 @@ class OrderModal extends React.Component {
                       <div className="fw-bold">Order No.:</div>
                       <div>{this.props.info.delNo || '-'}</div>
                     </Col>
-                    
+
                   </Row>
                   <Row className="mb-0">
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
@@ -280,7 +290,7 @@ class OrderModal extends React.Component {
                     </Col>
                   </Row>
                   <Row className="mb-0">
-                    <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
+                    <Col md={6} style={{ border: '1px solid black', paddingBottom: '48px' }} >
                       <div className="fw-bold">Despatched through:</div>
                       <div>{this.props.info.disthru || '-'}</div>
                     </Col>
@@ -289,7 +299,7 @@ class OrderModal extends React.Component {
                       <div>{this.props.info.destn || '-'}</div>
                     </Col>
                   </Row>
-                  
+
                 </Col>
               </Row>
 
@@ -358,7 +368,7 @@ class OrderModal extends React.Component {
                   {this.props.info.discountRate}%
                 </Col>
                 <Col style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}>
-                {this.props.currency} {Math.floor(this.props.discountAmount)}
+                  {this.props.currency} {Math.floor(this.props.discountAmount)}
                 </Col>
 
 
@@ -431,7 +441,7 @@ class OrderModal extends React.Component {
                   <p style={{ paddingBottom: '2px', paddingTop: '30px', fontWeight: 'bold', paddingLeft: '245px', fontSize: '16px', lineHeight: '6px' }}>Velandhan. K</p>
                   <p style={{ paddingLeft: '230px', fontSize: '14px', fontWeight: 'bold' }}>Authorised Signatory</p>
                 </Col>
-                
+
               </Row>
 
 
@@ -441,7 +451,7 @@ class OrderModal extends React.Component {
           <div className="pb-4 px-4">
             <Row>
               <Col md={6}>
-              {this.state.saving ? (
+                {this.state.saving ? (
                   <Button variant="outline-success" className="d-block w-100 mt-3 mt-md-0" disabled>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     Saving...

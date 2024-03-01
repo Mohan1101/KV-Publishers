@@ -551,7 +551,7 @@ class ItemRow extends React.Component {
             cellData={{
               type: 'number',
               name: 'quantity',
-              min: 0,
+              min: 1,
               step: '1',
               value: this.props.item.quantity,
               id: this.props.item.name,

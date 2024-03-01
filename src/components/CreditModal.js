@@ -11,6 +11,7 @@ import { storage, db } from '../firebase/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 
+
 async function GenerateInvoice(downloadCallback) {
   const element = document.getElementById('invoiceCapture');
   const canvas = await html2canvas(element);
@@ -150,22 +151,21 @@ try {
 
 
 
+ // Update the downloadInvoice function to initiate the download
+ downloadInvoice = () => {
+  // Call the existing function to generate the invoice without uploading
+  GenerateInvoice((pdfBlob) => {
+    // Create a temporary anchor tag
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(pdfBlob);
 
-  // Update the downloadInvoice function to initiate the download
-  downloadInvoice = () => {
-    // Call the existing function to generate the invoice without uploading
-    GenerateInvoice((pdfBlob) => {
-      // Create a temporary anchor tag
-      const downloadLink = document.createElement('a');
-      downloadLink.href = URL.createObjectURL(pdfBlob);
+    // Set the download attribute with the desired file name
+    downloadLink.download = 'CreditNote.pdf';
 
-      // Set the download attribute with the desired file name
-      downloadLink.download = 'Invoice.pdf';
-
-      // Trigger a click on the anchor tag to initiate the download
-      downloadLink.click();
-    });
-  };
+    // Trigger a click on the anchor tag to initiate the download
+    downloadLink.click();
+  });
+};
 
 
   render() {

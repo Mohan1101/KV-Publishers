@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import OrderItem from './OrderItem';
-import { db } from '../firebase/firebase'; 
+import { db } from '../firebase/firebase';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import OrderModal from './OrderModal';
@@ -62,7 +62,7 @@ class OrderForm extends React.Component {
                     name: '',
                     description: '',
                     price: '1.00',
-                    quantity: 0,
+                    quantity: 1,
                     pendingQuantity: 0,
                     remainingQuantity: 0,
                 }
@@ -74,7 +74,7 @@ class OrderForm extends React.Component {
 
         this.editField = this.editField.bind(this);
         this.handleSchoolChange = this.handleSchoolChange.bind(this);
-     
+
     }
 
     getCurrentDate = () => {
@@ -112,7 +112,7 @@ class OrderForm extends React.Component {
         }
     };
 
-handleSchoolChange = async (e) => {
+    handleSchoolChange = async (e) => {
         const schoolName = e.target.value;
 
         try {
@@ -147,51 +147,51 @@ handleSchoolChange = async (e) => {
     handleAddEvent(evt) {
         var id = (+ new Date() + Math.floor(Math.random() * 999999)).toString(36);
         var items = {
-          id: id,
-          name: '',
-          price: '1.00',
-          description: '',
-          quantity: 1,
-          pendingQuantity: 0,
+            id: id,
+            name: '',
+            price: '1.00',
+            description: '',
+            quantity: 1,
+            pendingQuantity: 0,
         };
         this.state.items.push(items);
-    
-        this.setState(
-          { items: this.state.items },
-          
-            
-        );
-      }
 
-      handleCalculateTotal() {
         this.setState(
-          prevState => {
-            const items = prevState.items;
-            const subTotal = items.reduce(
-              (total, item) =>
-                total + parseFloat(item.price) * parseInt(item.quantity),
-              0
-            );
-    
-            const discountAmmount = parseFloat(
-              subTotal * (prevState.discountRate / 100)
-            ).toFixed(2);
-            const total =
-              subTotal - discountAmmount;
-    
-            return {
-              subTotal: parseFloat(subTotal).toFixed(2),
-              discountAmmount: discountAmmount,
-              total: total
-            };
-          }
+            { items: this.state.items },
+
+
         );
-      }
-      handleChange = (event) => {
+    }
+
+    handleCalculateTotal() {
+        this.setState(
+            prevState => {
+                const items = prevState.items;
+                const subTotal = items.reduce(
+                    (total, item) =>
+                        total + parseFloat(item.price) * parseInt(item.quantity),
+                    0
+                );
+
+                const discountAmmount = parseFloat(
+                    subTotal * (prevState.discountRate / 100)
+                ).toFixed(2);
+                const total =
+                    subTotal - discountAmmount;
+
+                return {
+                    subTotal: parseFloat(subTotal).toFixed(2),
+                    discountAmmount: discountAmmount,
+                    total: total
+                };
+            }
+        );
+    }
+    handleChange = (event) => {
         this.setState({
-          payment: event.target.checked ? event.target.name : ''
+            payment: event.target.checked ? event.target.name : ''
         });
-      };
+    };
 
     onItemizedItemEdit(evt) {
         var item = {
@@ -199,8 +199,8 @@ handleSchoolChange = async (e) => {
             name: evt.target.name,
             value: evt.target.value
         };
-    
-        
+
+
         var items = this.state.items.slice();
         var newItems = items.map(function (items) {
             for (var key in items) {
@@ -212,21 +212,21 @@ handleSchoolChange = async (e) => {
             return items;
         });
         this.setState({ items: newItems });
-        console.log("evt",this.state.items);
+        console.log("evt", this.state.items);
         //this.handleCalculateTotal();
-      
+
     }
     onItemizedItemEdit2 = (id, name, value) => {
-       
-        
+
+
         var item = {
-          id: id,
-          name: name,
-          value: value
+            id: id,
+            name: name,
+            value: value
         };
-        console.log("onitemized",item);
+        console.log("onitemized", item);
         var items = this.state.items.slice();
-        console.log("items",items);
+        console.log("items", items);
         var newItems = items.map(function (items) {
             for (var key in items) {
                 if (key == item.name && items.name == item.id) {
@@ -238,9 +238,9 @@ handleSchoolChange = async (e) => {
         });
         this.setState({ items: newItems });
         console.log(this.state.items);
- 
-      };
-      
+
+    };
+
 
 
     editField = (event) => {
@@ -249,6 +249,23 @@ handleSchoolChange = async (e) => {
         });
         this.handleCalculateTotal();
     };
+
+    editFieldDate = (event) => {
+        // Extract the day, month, and year from the input value
+        const [year, month, day] = event.target.value.split('-');
+
+        // Format the date as "dd-mm-yyyy"
+        const formattedDate = `${day}-${month}-${year}`;
+
+        // Set the formatted date in the state
+        this.setState({
+            [event.target.name]: formattedDate
+        });
+
+        // Call any additional functions, like handleCalculateTotal, if needed
+        this.handleCalculateTotal();
+    };
+
 
     openModal = (event) => {
         event.preventDefault();
@@ -284,7 +301,7 @@ handleSchoolChange = async (e) => {
                             <Row className="mb-3">
                                 <Col md={6} lg={6} className="scrollable-col" style={{ borderRight: '1px solid grey', paddingRight: '10px' }}>
                                     <Form.Label className="fw-bold">Shipping to:</Form.Label>
-                                    <br/>
+                                    <br />
                                     <Select
                                         value={SchoolName}
                                         onChange={this.handleSchoolChange}
@@ -307,27 +324,34 @@ handleSchoolChange = async (e) => {
                                     <Form.Control placeholder="Contact" value={Contact} type="text" name="Contact" className="my-2" onChange={(event) => this.editField(event)} />
                                     <Form.Control placeholder="Email" value={Email} type="email" name="Email" className="my-2" onChange={(event) => this.editField(event)} />
                                     <div className="d-flex flex-row align-items-center">
-                                        <span className=" d-block me-2">Ordered Date:</span>
-                                        <Form.Control type="date" value={bdate} name="bdate" onChange={(event) => this.editField(event)} style={{ paddingLeft: '20px', maxWidth: '230px' }} />
+                                        <span className="d-block me-2">Ordered Date:</span>
+                                        <Form.Control
+                                            type="date"
+                                            value={bdate.split('-').reverse().join('-')}
+                                            name="bdate"
+                                            onChange={(event) => this.editFieldDate(event)}
+                                            style={{ paddingLeft: '20px', maxWidth: '230px' }}
+                                        />
                                     </div>
+
                                 </Col>
                                 <Col md={6} lg={6} className="scrollable-col">
-                                 <Row className="mx-2 mb-5">
-                               
-            
-                                    <Form.Label className="fw-bold">References:</Form.Label>
-                                    <Form.Control placeholder={"Supplier's ref"} rows={3} value={this.state.Sref} type="text" name="Sref" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
-                                    <Form.Control placeholder={"Other Reference(s)"} value={this.state.Oref} type="text" name="Oref" className="my-2" onChange={(event) => this.editField(event)} autoComplete="email" />
-                                    <hr className="my-4" />
-                                    <Form.Control placeholder={"Buyer's Reference"} value={this.state.Bref} type="text" name="Bref" className="my-2" autoComplete="address" onChange={(event) => this.editField(event)} />
-                                    <Form.Control placeholder={"Order No" } value={this.state.delNo} type="number" name="delNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="address" />
-                                
-                            </Row>
-                            </Col>
+                                    <Row className="mx-2 mb-5">
+
+
+                                        <Form.Label className="fw-bold">References:</Form.Label>
+                                        <Form.Control placeholder={"Supplier's ref"} rows={3} value={this.state.Sref} type="text" name="Sref" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
+                                        <Form.Control placeholder={"Other Reference(s)"} value={this.state.Oref} type="text" name="Oref" className="my-2" onChange={(event) => this.editField(event)} autoComplete="email" />
+                                        <hr className="my-4" />
+                                        <Form.Control placeholder={"Buyer's Reference"} value={this.state.Bref} type="text" name="Bref" className="my-2" autoComplete="address" onChange={(event) => this.editField(event)} />
+                                        <Form.Control placeholder={"Order No"} value={this.state.delNo} type="number" name="delNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="address" />
+
+                                    </Row>
+                                </Col>
 
 
                             </Row>
-                            
+
                             <hr className="my-4" />
                             <Row>
                                 <Col md={4} style={{ borderRight: '1px solid black' }}>
@@ -349,20 +373,25 @@ handleSchoolChange = async (e) => {
                                 <Col md={4}>
                                     <Form.Label className="fw-bold">Dispatch details:</Form.Label>
                                     <Form.Control placeholder={"Dispatch Document No."} rows={3} value={this.state.ddNo} type="text" name="ddNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
-                                    <div className="d-flex flex-row align-items-center" style={{ paddingTop: '35px' }}>
-                                    <span className=" d-block me-2">Dated:</span>
-                                        <Form.Control type="date" value={this.state.ddDate}
-                                         name={"ddDate"} onChange={(event) => this.editField(event)} style={{
-                                            paddingLeft: '20px',
-                                            maxWidth: '230px'
-                                        }} />
+                                    <Form.Label className="fw-bold">Dispatch Date:</Form.Label>
+                                    <div className="d-flex mt-2 flex-row align-items-center">
+                                      
+                                        <Form.Control
+                                            type="date"
+                                            value={ this.state.ddDate.split('-').reverse().join('-')}
+                                            name="ddDate" 
+                                            onChange={(event) => this.editFieldDate(event)}
+                                            style={{ paddingLeft: '20px', maxWidth: '230px' }}
+                                        />
                                     </div>
 
                                 </Col>
                                 <Col md={4} style={{ borderLeft: '1px solid grey' }}>
                                     <Form.Label className="fw-bold">Route:</Form.Label>
                                     <Form.Control placeholder={"Dispatched Through"} rows={3} value={this.state.disthru} type="text" name="disthru" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
-                                    <div style={{ paddingTop: '28px' }}>
+                                    <Form.Label className="fw-bold">Destination:</Form.Label>
+                                    <div style={{ paddingTop: '2px' }}>
+                                        
                                         <Form.Control placeholder={"Destination"} value={this.state.destn} type="text" name="destn" className="my-2" onChange={(event) => this.editField(event)} autoComplete="email" />
                                     </div>
                                 </Col>
@@ -377,8 +406,8 @@ handleSchoolChange = async (e) => {
                                 items={this.state.items}
                                 onItemsDone={this.handleItemsDone} // Pass the callback function to InvoiceItem
                             />
-                      
-                            
+
+
                             <Row className="mt-4 justify-content-end">
                                 <Col lg={6}>
                                     <div className="d-flex flex-row align-items-start justify-content-between">
@@ -403,14 +432,14 @@ handleSchoolChange = async (e) => {
                     </Col>
                     <Col md={4} lg={3} className="fixed-col">
                         <div className="sticky-top pt-md-3 pt-xl-4">
-                        <Button
-        variant="primary"
-        type="submit"
-        className={buttonClassName}
-        disabled={!this.state.itemsDone}
-      >
-        Review Invoice
-      </Button>
+                            <Button
+                                variant="primary"
+                                type="submit"
+                                className={buttonClassName}
+                                disabled={!this.state.itemsDone}
+                            >
+                                Review Invoice
+                            </Button>
                             <OrderModal
                                 showModal={this.state.isOpen}
                                 closeModal={this.closeModal}

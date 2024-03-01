@@ -60,11 +60,17 @@ class CreditNoteItem extends React.Component {
           if (productSnapshot.exists()) {
             const currentQuantity = productSnapshot.data().Quantity || 0;
             const enteredQuantity = parseInt(item.quantity, 10);
+
+           
+           console.log('Current Quantity:', currentQuantity);
+            console.log('Entered Quantity:', enteredQuantity);
+
   
-            const updatedQuantity = currentQuantity + enteredQuantity;
+            const updatedQuantity = Number(currentQuantity) + enteredQuantity;
   
             // Update the quantity in the 'GENERAL PRODUCTS' collection
             await updateDoc(productRef, { Quantity: updatedQuantity });
+
             console.log(`Quantity updated for ${selectedItemId}. New quantity: ${updatedQuantity}`);
           } else {
             console.error(`Document does not exist for ${selectedItemId} in 'GENERAL PRODUCTS'.`);
@@ -80,6 +86,9 @@ class CreditNoteItem extends React.Component {
     this.setState({ isSubmitting: false });
     this.props.onItemsDone(true);
   };
+
+
+  
   
   
 
