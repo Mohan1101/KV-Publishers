@@ -96,7 +96,7 @@ class CreditModal extends React.Component {
     GenerateInvoice(async (pdfBlob) => {
       const pdfFileName = `Order-${Date.now()}.pdf`;
       const storageRef = ref(storage, pdfFileName);
-      const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
+      const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
   
       try {
         // Upload compressed PDF to Firebase Storage
@@ -111,7 +111,10 @@ class CreditModal extends React.Component {
 try {
   // Using addDoc to create a new document
   const orderDocRef = await addDoc(ordersCollectionRef, {
-    Amount: `${this.props.currency} ${this.props.total}`,
+
+    invoiceTotal: `${this.props.currency} ${this.props.credittotal}`,
+    creditTotal: `${this.props.currency} ${this.props.total}`,
+    balance: `${this.props.currency} ${this.props.balance}`,
     Downloadablelink: downloadURL,
     Products: this.props.items.map(item => ({
       name: item.name,
@@ -123,7 +126,8 @@ try {
     Contact,
     Email,
     Date: this.props.info.currentDate,
-    // Add more fields as needed
+    orderid,
+    
   });
 
   console.log('Document created successfully:', orderDocRef.id);
@@ -169,12 +173,13 @@ try {
 
 
   render() {
-    const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
+    const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
     return (
       <div>
         <Modal show={this.props.showModal} onHide={this.props.closeModal} size="lg" centered >
           <div id="invoiceCapture">
             <div className="p-4">
+              <h4 className="text-center" style={{ border: '1px solid black', padding: '5px' }}>CREDIT NOTE</h4>
               <Row className="mb-0">
                 <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
                   
@@ -190,8 +195,8 @@ try {
                     <p className=" ">Email: &nbsp; {Email}</p>
 
                     
-                    <p className=" ">Ordered Date: {this.props.info.bdate}
-                    </p>
+                    <p className=" ">Ordered Date: {this.props.info.bdate}</p>
+                    <p className=" ">Order Id: {orderid}</p>
                   </div>
                 </Col>
 
@@ -332,7 +337,23 @@ try {
               </Row>
               <Row >
                 <Col md={6} style={{ border: '1px solid black', padding: '3px' }}>
-                  <strong>TOTAL</strong>
+                  <strong>INVOICE TOTAL</strong>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                  &nbsp;&nbsp;{this.props.currency} {this.props.credittotal}
+                </Col>
+              </Row>
+              <Row >
+                <Col md={6} style={{ border: '1px solid black', padding: '3px' }}>
+                  <strong>CREDIT TOTAL</strong>
                 </Col>
                 <Col style={{ border: '1px solid black', padding: '3px' }}>
 
@@ -344,6 +365,22 @@ try {
                 </Col>
                 <Col style={{ border: '1px solid black', padding: '3px' }}>
                   &nbsp;&nbsp;{this.props.currency} {this.props.total}
+                </Col>
+              </Row>
+              <Row >
+                <Col md={6} style={{ border: '1px solid black', padding: '3px' }}>
+                  <strong>BALANCE</strong>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                  &nbsp;&nbsp;{this.props.currency} {this.props.balance}
                 </Col>
               </Row>
               <Row >

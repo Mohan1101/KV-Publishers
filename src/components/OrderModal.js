@@ -95,7 +95,7 @@ class OrderModal extends React.Component {
     GenerateInvoice(async (pdfBlob) => {
       const pdfFileName = `Order-${Date.now()}.pdf`;
       const storageRef = ref(storage, pdfFileName);
-      const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
+      const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
 
 
       try {
@@ -108,6 +108,8 @@ class OrderModal extends React.Component {
         // Create a new document in the 'Orders' collection with relevant fields, excluding 'Products'
         const ordersCollectionRef = collection(db, 'Orders');
         const orderDocRef = await addDoc(ordersCollectionRef, {
+         
+          orderid,
           Amount: `${this.props.currency} ${this.props.total}`,
           Downloadablelink: downloadURL,
           SchoolName,
@@ -180,7 +182,7 @@ class OrderModal extends React.Component {
 
 
   render() {
-    const { SchoolName, Principal, Address, Contact, Email } = this.props.schoolInfo;
+    const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
     return (
       <div>
         <Modal show={this.props.showModal} onHide={this.props.closeModal} size="lg" centered >
@@ -202,6 +204,8 @@ class OrderModal extends React.Component {
 
 
                     <p className=" ">Ordered Date: {this.props.info.bdate}
+
+                    <p className=''>Order Id: {this.props.info.orderid}</p>
                     </p>
                   </div>
                 </Col>

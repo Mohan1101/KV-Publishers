@@ -93,6 +93,7 @@ class CreditNoteItem extends React.Component {
   
 
   render() {
+    
     var onItemizedItemEdit = this.props.onItemizedItemEdit;
     var currency = this.props.currency;
     var rowDel = this.props.onRowDel;

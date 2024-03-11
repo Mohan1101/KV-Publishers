@@ -10,6 +10,7 @@ import Card from 'react-bootstrap/Card';
 import CreditNoteItem from './CreditNoteitem';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { db } from '../firebase/firebase'; // Replace with your actual Firebase db import path
+import { getDocs, collection, query, where } from 'firebase/firestore';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import CreditModal from './CreditModal';
@@ -55,6 +56,9 @@ class CreditNote extends React.Component {
             Principal: '',
             Address: '',
             Contact: '',
+            credittotal: '',
+            orderid: '',
+            balance: '',
 
             itemsDone: false,
             items: [
@@ -67,6 +71,7 @@ class CreditNote extends React.Component {
                 }
             ],
             schools: [],
+            orderData: [],
 
 
 
@@ -92,7 +97,9 @@ class CreditNote extends React.Component {
 
     componentDidMount() {
         this.fetchSchoolOptions();
+        this.fecthorderId();
         this.handleCalculateTotal();
+
     }
 
     fetchSchoolOptions = async () => {
@@ -109,6 +116,26 @@ class CreditNote extends React.Component {
             console.error('Error fetching schools:', error);
         }
     };
+
+    fecthorderId = async () => {
+        try {
+            const orderSnapshot = await db.collection('Orders').get();
+            const orderData = orderSnapshot.docs.map((doc) => ({
+                label: doc.id,
+                orderid: doc.data().orderid, // Use orderid instead of value
+                value: doc.data().name,
+                amount: doc.data().Amount
+            }));
+
+            this.setState({ orderData: orderData }); // Update the state after fetching data
+            console.log('Order Data:', orderData);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
+
+
+
 
     handleSchoolChange = async (e) => {
         const schoolName = e.target.value;
@@ -134,6 +161,66 @@ class CreditNote extends React.Component {
             console.error('Error fetching school details:', error);
         }
     };
+
+
+    handleOrderIdChange = async (e) => {
+        const enteredOrderId = e.target.value;
+
+        // Check if enteredOrderId is a valid value
+        if (!enteredOrderId) {
+            console.error('Invalid orderid:', enteredOrderId);
+
+            // Reset credittotal to 0 when no valid order is selected
+            this.setState({
+                credittotal: 0,
+                balance: 0, // Reset balance to 0 as well
+            });
+
+            return;
+        }
+
+        console.log('Selected orderid:', enteredOrderId);
+
+        try {
+            const q = query(collection(db, 'Orders'), where('orderid', '==', enteredOrderId));
+            const orderSnapshot = await getDocs(q);
+
+            if (!orderSnapshot.empty) {
+                const selectedOrder = orderSnapshot.docs[0].data();
+                const amountWithCurrency = selectedOrder.Amount || 0;
+
+                // Extract numeric part from the amountWithCurrency
+                const amountNumeric = parseFloat(amountWithCurrency.replace(/[^\d.-]/g, ''));
+                console.log('Amount:', amountNumeric);
+
+                // Update the state with the selected order's amount and calculate balance
+                this.setState({
+                    orderid: enteredOrderId, // Set the orderid in the state
+                    credittotal: amountNumeric,
+                    balance: (parseFloat(this.state.total) - amountNumeric).toFixed(2), // Calculate and set the balance
+                });
+
+                console.log('Selected order:', selectedOrder);
+            } else {
+                console.error('No order found with orderid:', enteredOrderId);
+
+                // Reset credittotal and balance to 0 when no valid order is selected
+                this.setState({
+                    orderid: enteredOrderId, // Set the orderid in the state even if it's not found
+                    credittotal: 0,
+                    balance: 0,
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+        }
+    };
+
+
+
+
+
+
 
 
     handleRowDel(items) {
@@ -177,7 +264,9 @@ class CreditNote extends React.Component {
                 return {
                     subTotal: parseFloat(subTotal).toFixed(2),
                     discountAmmount: discountAmmount,
-                    total: total
+                    total: total,
+
+
                 };
             }
         );
@@ -287,8 +376,8 @@ class CreditNote extends React.Component {
                                     <Form.Control placeholder="Address" value={Address} type="text" name="Address" className="my-2" onChange={(event) => this.editField(event)} />
                                     <Form.Control placeholder="Contact" value={Contact} type="text" name="Contact" className="my-2" onChange={(event) => this.editField(event)} />
                                     <Form.Control placeholder="Email" value={Email} type="email" name="Email" className="my-2" onChange={(event) => this.editField(event)} />
-                                    <div className="d-flex flex-row align-items-center">
-                                        <span className="d-block me-2">Ordered Date:</span>
+                                    <div className="d-flex gap-2 flex-row align-items-center">
+                                        <span className="d-block me-2 fw-bold">Ordered Date:</span>
                                         <Form.Control
                                             type="date"
                                             value={bdate.split('-').reverse().join('-')}  // Format date as "dd-mm-yyyy"
@@ -296,7 +385,30 @@ class CreditNote extends React.Component {
                                             onChange={(event) => this.editFieldDate(event)}
                                             style={{ paddingLeft: '20px', maxWidth: '230px' }}
                                         />
+                                        <Form.Label className="fw-bold">OrderId:</Form.Label>
+                                        <Select
+                                            value={this.state.orderid}
+                                            name="orderid"
+                                            onChange={this.handleOrderIdChange}
+                                            className="mb-2"
+                                            displayEmpty
+                                        >
+                                            <MenuItem value="" disabled>
+                                                Select Order Id
+                                            </MenuItem>
+                                            {this.state.orderData.map((order) => (
+                                                <MenuItem key={order.label} value={order.orderid}>
+                                                    {order.orderid}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+
+                                        
+
+
+
                                     </div>
+
 
                                 </Col>
                                 <Col md={12}>
@@ -305,15 +417,16 @@ class CreditNote extends React.Component {
                                     <Form.Control placeholder={"Dispatch Document No."} rows={3} value={this.state.ddNo} type="text" name="ddNo" className="my-2" onChange={(event) => this.editField(event)} autoComplete="name" />
                                     <Form.Label className="fw-bold">Dispatch Date:</Form.Label>
                                     <div className="d-flex flex-row align-items-center">
-                                       
+
                                         <Form.Control
                                             type="date"
-                                            value={ this.state.ddDate.split('-').reverse().join('-')}
-                                            name="ddDate" 
+                                            value={this.state.ddDate.split('-').reverse().join('-')}
+                                            name="ddDate"
                                             onChange={(event) => this.editFieldDate(event)}
                                             style={{ paddingLeft: '20px', maxWidth: '230px' }}
                                         />
                                     </div>
+
 
 
                                 </Col>
@@ -345,9 +458,20 @@ class CreditNote extends React.Component {
                                     </div>
                                     <hr />
                                     <div className="d-flex flex-row align-items-start justify-content-between" style={{ fontSize: '1.125rem' }}>
-                                        <span className="fw-bold">Total:</span>
+                                        <span className="fw-bold">Invoice Total:</span>
+                                        <span className="fw-bold">{this.state.currency}{this.state.credittotal || 0}</span>
+                                    </div>
+                                    <hr />
+                                    <div className="d-flex flex-row align-items-start justify-content-between" style={{ fontSize: '1.125rem' }}>
+                                        <span className="fw-bold">Credit Total:</span>
                                         <span className="fw-bold">{this.state.currency}{this.state.total || 0}</span>
                                     </div>
+                                    <hr />
+                                    <div className="d-flex flex-row align-items-start justify-content-between" style={{ fontSize: '1.125rem' }}>
+                                        <span className="fw-bold">Balance:</span>
+                                        <span className="fw-bold">{this.state.currency}{this.state.balance = (parseFloat(this.state.credittotal) - parseFloat(this.state.total)).toFixed(2)}</span>
+                                    </div>
+
                                 </Col>
                             </Row>
                             <hr className="my-4" />
@@ -373,12 +497,15 @@ class CreditNote extends React.Component {
                                 taxAmount={this.state.taxAmount}
                                 discountAmount={this.state.discountAmmount}
                                 total={this.state.total}
+                                credittotal={this.state.credittotal}
+                                balance={this.state.balance}
                                 schoolInfo={{
                                     SchoolName: this.state.SchoolName,
                                     Principal: this.state.Principal,
                                     Address: this.state.Address,
                                     Contact: this.state.Contact,
                                     Email: this.state.Email,
+                                    orderid: this.state.orderid,
                                 }}
                             />
                             <Form.Group className="my-3">

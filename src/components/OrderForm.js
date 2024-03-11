@@ -54,6 +54,7 @@ class OrderForm extends React.Component {
             Principal: '',
             Address: '',
             Contact: '',
+            orderid: Math.floor(100000 + Math.random() * 900000),
 
             itemsDone: false,
             items: [
@@ -182,7 +183,8 @@ class OrderForm extends React.Component {
                 return {
                     subTotal: parseFloat(subTotal).toFixed(2),
                     discountAmmount: discountAmmount,
-                    total: total
+                    
+                    total: Math.round(total)
                 };
             }
         );
@@ -334,6 +336,9 @@ class OrderForm extends React.Component {
                                         />
                                     </div>
 
+
+
+
                                 </Col>
                                 <Col md={6} lg={6} className="scrollable-col">
                                     <Row className="mx-2 mb-5">
@@ -456,6 +461,7 @@ class OrderForm extends React.Component {
                                     Address: this.state.Address,
                                     Contact: this.state.Contact,
                                     Email: this.state.Email,
+                                    orderid: this.state.orderid,
                                 }}
                             />
                             <Form.Group className="my-3">
