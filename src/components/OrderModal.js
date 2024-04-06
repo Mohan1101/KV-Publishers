@@ -1,5 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { PDFDocument, rgb } from 'pdf-lib';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
@@ -12,18 +13,69 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 
 async function GenerateInvoice(downloadCallback) {
-  const element = document.getElementById('invoiceCapture');
-  const canvas = await html2canvas(element);
-  const imgData = canvas.toDataURL('image/jpeg', 0.7);
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-  if (downloadCallback) {
-    downloadCallback(pdf.output('blob'));
-  }
-}
+  const invoiceCapture = document.getElementById('invoiceCapture');
 
+  invoiceCapture.style.paddingTop = '30px'; 
+  invoiceCapture.style.paddingLeft = '10px';    
+  invoiceCapture.style.paddingBottom = '30px'; 
+
+  // Use html2canvas to convert the content into an image
+  const canvas = await html2canvas(invoiceCapture);
+
+  // Get the data URL of the canvas
+  const imgData = canvas.toDataURL('image/png'); 
+
+  // Create HTML code with the image embedded
+  const html_code = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Invoice</title>
+     
+    </head>
+    <body>
+      <img src="${imgData}" alt="Invoice">
+    </body>
+    </html>`;
+
+  // Open a new window and write the HTML code
+
+  //set timeout and close the window after 1 sec
+
+
+  const new_window = window.open();
+
+
+  new_window.document.write(html_code);
+
+
+
+
+
+
+  new_window.print();
+    //save the pdf
+  new_window.close();
+  
+
+    
+
+  const pdf = new jsPDF('p', 'pt', 'a3');
+
+    // Return a promise that resolves when the PDF generation is complete
+    return new Promise((resolve, reject) => {
+      const final_pdf = pdf.html(invoiceCapture, {
+        callback: function (pdf) {
+          pdf.save('invoice.pdf');
+          resolve(pdf.output('blob'));
+        }
+      });
+    }); 
+
+
+}
 
 function convertToIndianWords(amount) {
   const ones = [
@@ -81,7 +133,6 @@ function convertToIndianWords(amount) {
   return words.join(" ");
 }
 
-
 class OrderModal extends React.Component {
   constructor(props) {
     super(props);
@@ -92,77 +143,69 @@ class OrderModal extends React.Component {
 
   uploadToFirebase = async () => {
     this.setState({ saving: true });
-    GenerateInvoice(async (pdfBlob) => {
-      const pdfFileName = `Order-${Date.now()}.pdf`;
-      const storageRef = ref(storage, pdfFileName);
-      const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
+    const pdfBlob = await GenerateInvoice();
+    const pdfFileName = `Order-${Date.now()}.pdf`;
+    const storageRef = ref(storage, pdfFileName);
+    const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
 
+    try {
+      // Upload compressed PDF to Firebase Storage
+      await uploadBytes(storageRef, pdfBlob);
+      console.log('Compressed PDF uploaded to Firebase Storage');
 
-      try {
-        // Upload compressed PDF to Firebase Storage
-        await uploadBytes(storageRef, pdfBlob);
-        console.log('Compressed PDF uploaded to Firebase Storage');
+      const downloadURL = await getDownloadURL(storageRef);
 
-        const downloadURL = await getDownloadURL(storageRef);
+      // Create a new document in the 'Orders' collection with relevant fields, excluding 'Products'
+      const ordersCollectionRef = collection(db, 'Orders');
+      const orderDocRef = await addDoc(ordersCollectionRef, {
+       
+        orderid,
+        Amount: `${this.props.currency} ${this.props.total}`,
+        Downloadablelink: downloadURL,
+        SchoolName,
+        Principal,
+        Address,
+        Contact,
+        Email,
+        Date: this.props.info.currentDate,
+        // Add more fields as needed
+      });
 
-        // Create a new document in the 'Orders' collection with relevant fields, excluding 'Products'
-        const ordersCollectionRef = collection(db, 'Orders');
-        const orderDocRef = await addDoc(ordersCollectionRef, {
-         
-          orderid,
-          Amount: `${this.props.currency} ${this.props.total}`,
-          Downloadablelink: downloadURL,
-          SchoolName,
-          Principal,
-          Address,
-          Contact,
-          Email,
-          Date: this.props.info.currentDate,
-          // Add more fields as needed
+      console.log('Invoice details uploaded to Firestore (Orders collection)');
+
+      // Create a new subcollection 'Products' inside the 'Orders' document
+      const productsSubcollectionRef = collection(orderDocRef, 'Products');
+
+      // Split product names and create documents in the 'Products' subcollection
+      const productNames = this.props.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        pendingQuantity: item.pendingQuantity,
+        date: this.props.info.currentDate,
+      }));
+
+      for (const product of productNames) {
+        await addDoc(productsSubcollectionRef, {
+          Product: product.name,
+          Quantity: product.quantity,
+          PendingQuantity: product.pendingQuantity,
+          Date: product.date,
+          Status: '',  // Set the initial status to an empty string
         });
-
-        console.log('Invoice details uploaded to Firestore (Orders collection)');
-
-        // Create a new subcollection 'Products' inside the 'Orders' document
-        const productsSubcollectionRef = collection(orderDocRef, 'Products');
-
-        // Split product names and create documents in the 'Products' subcollection
-        const productNames = this.props.items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          pendingQuantity: item.pendingQuantity,
-          date: this.props.info.currentDate,
-        }));
-
-        for (const product of productNames) {
-          await addDoc(productsSubcollectionRef, {
-            Product: product.name,
-            Quantity: product.quantity,
-            PendingQuantity: product.pendingQuantity,
-            Date: product.date,
-            Status: '',  // Set the initial status to an empty string
-          });
-        }
-
-
-        console.log('Product details uploaded to Firestore (Products subcollection)');
-
-        // Redirect to the desired URL after successful upload
-        window.location.assign('https://kvpublication-daat.web.app/');
-
-      } catch (error) {
-        console.error('Error uploading compressed PDF to Firebase Storage:', error);
       }
-      finally {
-        this.setState({ saving: false });  // Reset saving state to false
-      }
-    });
+
+      console.log('Product details uploaded to Firestore (Products subcollection)');
+
+      // Redirect to the desired URL after successful upload
+      window.location.assign('https://kvpublication-daat.web.app/');
+
+    } catch (error) {
+      console.error('Error uploading compressed PDF to Firebase Storage:', error);
+    }
+    finally {
+      this.setState({ saving: false });  // Reset saving state to false
+    }
   };
-
-
-
-
-
 
   // Update the downloadInvoice function to initiate the download
   downloadInvoice = () => {
@@ -180,7 +223,6 @@ class OrderModal extends React.Component {
     });
   };
 
-
   render() {
     const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
     return (
@@ -189,7 +231,7 @@ class OrderModal extends React.Component {
           <div id="invoiceCapture">
             <div className="p-4">
               <Row className="mb-0">
-                <Col md={6} style={{ border: '1px solid black', padding: '5px' }} >
+                <Col md={6} style={{  border: '1px solid black', padding: '5px' }} >
 
                   <div className="fw-bold d-flex flex-column">
                     <p>Shipping to:</p>

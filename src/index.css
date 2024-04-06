@@ -51,3 +51,7 @@ code {
   text-decoration: none;
   color: lightblue;
 }
+
+.page-break {
+  page-break-after: always;
+}

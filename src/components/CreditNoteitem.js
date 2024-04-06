@@ -25,24 +25,36 @@ class CreditNoteItem extends React.Component {
 
   async componentDidMount() {
     try {
-      const q = query(collection(db, 'GENERAL PRODUCTS'), where('Category', '==', 'Inventory'));
-      const productsSnapshot = await getDocs(q);
-      console.log('Products Snapshot:', productsSnapshot.docs);
-
-      const inventoryData = productsSnapshot.docs.map((doc) => ({
+      // Fetch inventory products where Category is 'Inventory'
+      const inventoryQuery = query(collection(db, 'GENERAL PRODUCTS'), where('Category', '==', 'Inventory'));
+      const inventorySnapshot = await getDocs(inventoryQuery);
+      const inventoryData = inventorySnapshot.docs.map((doc) => ({
         label: doc.id,
         value: doc.data().BookName,
         quantity: doc.data().Quantity,
         price: doc.data().SellingPrice,
       }));
-
-      console.log('Inventory Data:', inventoryData);
-
-      this.setState({ inventoryData });
+  
+      // Fetch distributor products where Distributorname is not 'NA'
+      const distributorQuery = query(collection(db, 'GENERAL PRODUCTS'), where('Distributorname', '!=', 'NA'));
+      const distributorSnapshot = await getDocs(distributorQuery);
+      const distributorData = distributorSnapshot.docs.map((doc) => ({
+        label: doc.id,
+        value: doc.data().BookName,
+        quantity: doc.data().Quantity,
+        price: doc.data().SellingPrice,
+      }));
+  
+      // Merge both inventory and distributor data
+      const mergedData = [...inventoryData, ...distributorData];
+  
+      // Update state with merged data
+      this.setState({ inventoryData: mergedData });
     } catch (error) {
-      console.error('Error fetching inventory data:', error);
+      console.error('Error fetching data:', error);
     }
   }
+  
 
 
 
