@@ -13,16 +13,68 @@ import { collection, addDoc } from 'firebase/firestore';
 
 
 async function GenerateInvoice(downloadCallback) {
-  const element = document.getElementById('invoiceCapture');
-  const canvas = await html2canvas(element);
-  const imgData = canvas.toDataURL('image/jpeg', 0.7);
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-  if (downloadCallback) {
-    downloadCallback(pdf.output('blob'));
-  }
+  const invoiceCapture = document.getElementById('invoiceCapture');
+
+  invoiceCapture.style.paddingTop = '30px'; 
+  invoiceCapture.style.paddingLeft = '10px';    
+  invoiceCapture.style.paddingBottom = '30px'; 
+
+  // Use html2canvas to convert the content into an image
+  const canvas = await html2canvas(invoiceCapture);
+
+  // Get the data URL of the canvas
+  const imgData = canvas.toDataURL('image/png'); 
+
+  // Create HTML code with the image embedded
+  const html_code = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Invoice</title>
+     
+    </head>
+    <body>
+      <img src="${imgData}" alt="Invoice">
+    </body>
+    </html>`;
+
+  // Open a new window and write the HTML code
+
+  //set timeout and close the window after 1 sec
+
+
+  const new_window = window.open();
+
+
+  new_window.document.write(html_code);
+
+
+
+
+
+
+  new_window.print();
+    //save the pdf
+  new_window.close();
+  
+
+    
+
+  const pdf = new jsPDF('p', 'pt', 'a3');
+
+    // Return a promise that resolves when the PDF generation is complete
+    return new Promise((resolve, reject) => {
+      const final_pdf = pdf.html(invoiceCapture, {
+        callback: function (pdf) {
+          pdf.save('credinote.pdf');
+          resolve(pdf.output('blob'));
+        }
+      });
+    }); 
+
+
 }
 
 
@@ -93,7 +145,7 @@ class CreditModal extends React.Component {
 
   uploadToFirebase = async () => {
     this.setState({ saving: true }); 
-    GenerateInvoice(async (pdfBlob) => {
+    const pdfBlob = await GenerateInvoice();
       const pdfFileName = `Order-${Date.now()}.pdf`;
       const storageRef = ref(storage, pdfFileName);
       const { SchoolName, Principal, Address, Contact, Email, orderid } = this.props.schoolInfo;
@@ -148,7 +200,7 @@ try {
       finally {
         this.setState({ saving: false });  // Reset saving state to false
       }
-    });
+
   };
   
   
