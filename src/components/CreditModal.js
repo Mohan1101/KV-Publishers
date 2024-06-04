@@ -271,7 +271,7 @@ try {
                   <Row className="mb-0">
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Invoice No.:</div>
-                      <div>1</div>
+                      <div>{this.props.info.invoiceNumber}</div>
                     </Col>
                     <Col md={6} style={{ border: '1px solid black', padding: '3px' }} >
                       <div className="fw-bold">Dated:</div>
@@ -401,6 +401,38 @@ try {
                 </Col>
                 <Col style={{ border: '1px solid black', padding: '3px' }}>
                   &nbsp;&nbsp;{this.props.currency} {this.props.credittotal}
+                </Col>
+              </Row>
+              <Row >
+                <Col md={6} style={{ border: '1px solid black', padding: '3px' }}>
+                  <strong>SUB TOTAL</strong>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                  &nbsp;&nbsp;{this.props.currency} {this.props.subTotal}
+                </Col>
+              </Row>
+              <Row >
+                <Col md={6} style={{ border: '1px solid black', padding: '3px' }}>
+                  <strong>DISCOUNT AMOUNT</strong>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                </Col>
+                <Col style={{ border: '1px solid black', padding: '3px' }}>
+                  &nbsp;&nbsp;{this.props.currency} {this.props.discountAmount}
                 </Col>
               </Row>
               <Row >

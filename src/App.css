@@ -1,3 +1,5 @@
+
+
 body, html {
   font-size: 0.9rem;
   background: #f2f3f7
@@ -132,4 +134,110 @@ hr {
   animation: scaleAnimation 1.2s infinite;
   
 }
+
+
+.signin-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #0167af;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #01447e;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+
+.Signin {
+  background-color: #0167af;  
+  text-align: center;
+  color: #fff;
+  padding: 10px 0;
+  margin-bottom: 10%;
+}
+
+.Signin h1 {
+  font-size: 1.7rem;
+  font-weight: bold;
+  padding-top: 18px;
+  padding-bottom: 18px;
+
+}
+
+.Signin label {
+  font-size: 2rem;
+  font-weight: bold;
+  padding-top: 18px;
+}
+
+
+
+.logo-container {
+  margin-right: 20px;
+}
+
+.main-logo {
+  width: 150px; /* Adjust the width as needed */
+}
+
+.info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2% 0%;
+  border-radius: 5px;
+  background-color: #f8f8f8; /* Set background color as needed */
+}
+
+.welcome-message {
+  font-size: 28px;
+  color: #333; /* Set text color as needed */
+  margin-bottom: 20px;
+  background-color: #0167af;
+  color: #ffffff;
+  width: 100%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  text-align: center;
+  margin-top: 20px;
+}
+
+
+
+
+
 

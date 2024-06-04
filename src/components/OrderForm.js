@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
+import Navbar from './navbar';
 import MenuItem from '@mui/material/MenuItem';
 import Button from 'react-bootstrap/Button';
 import InputLabel from '@mui/material/InputLabel';
@@ -281,6 +282,8 @@ class OrderForm extends React.Component {
         const { schools, SchoolName, Email, Principal, Address, Contact, bdate } = this.state;
         const buttonClassName = `d-block w-100 btn-secondary ${this.state.itemsDone ? 'scale-animation' : ''}`;
         return (
+            <>
+            <Navbar />
             <Form onSubmit={this.openModal}>
                 <Row>
                     <Col md={8} lg={9} className="scrollable-col">
@@ -475,6 +478,7 @@ class OrderForm extends React.Component {
                     </Col>
                 </Row>
             </Form>
+            </>
         );
     }
 }
